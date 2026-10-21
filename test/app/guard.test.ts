@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { describe, expect, it, vi } from 'vitest';
-import type { AppEnv } from '../../src/app/env';
+import type { AppEnv } from '../../src/app/app-env';
 import { handleOwnerApi, type OwnerApiDeps } from '../../src/app/lib/server/owner-api';
 import { countEvents, seedKey } from '../helpers';
 import { accessJwt, localJwks, serviceTokenJwt } from './jwt';

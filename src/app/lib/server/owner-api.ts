@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { eventStatement, logEvent } from '../../../shared/events';
 import { nowIso, randomId, sha256Hex } from '../../../shared/ids';
-import type { AppEnv } from '../../env';
+import type { AppEnv } from '../../app-env';
 import type { SendOutcome, SendRequest } from '../../send';
 import { ownerGuard, type GuardDeps, type Intent } from './guard';
 import { loadReview } from './review';

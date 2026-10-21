@@ -1,5 +1,5 @@
 import { replySubject } from '../../../shared/msgid';
-import type { AppEnv } from '../../env';
+import type { AppEnv } from '../../app-env';
 
 // Data for screen 4. TO, FROM and SUBJECT are computed from the thread exactly as send.ts does.
 

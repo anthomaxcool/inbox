@@ -1,6 +1,6 @@
 import { jwtVerify, type JWTVerifyGetKey } from 'jose';
 import { logEvent, type Actor } from '../../../shared/events';
-import type { AppEnv } from '../../env';
+import type { AppEnv } from '../../app-env';
 
 // The owner guard (plan §8.2). One function, run on every request to inbox-app.
 // It verifies the Access JWT itself and never trusts that Access ran. It never reads

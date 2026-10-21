@@ -21,6 +21,9 @@
 		"key:create": "node scripts/key-create.mjs",
 		"key:revoke": "node scripts/key-revoke.mjs"
 	},
+	"imports": {
+		"#lib/*": "./src/app/lib/*"
+	},
 	"dependencies": {
 		"jose": "^6.2.13",
 		"postal-mime": "^4.1.3",
