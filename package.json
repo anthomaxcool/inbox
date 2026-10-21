@@ -1,0 +1,52 @@
+{
+	"name": "inbox",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"license": "MIT",
+	"scripts": {
+		"dev:app": "vite dev",
+		"build": "vite build",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:e2e": "playwright test",
+		"check:send-surface": "node scripts/check-send-surface.mjs",
+		"check:config": "node scripts/check-config.mjs",
+		"render:mail": "node scripts/render-wrangler.mjs mail",
+		"render:app": "node scripts/render-wrangler.mjs app",
+		"deploy:mail": "node scripts/render-wrangler.mjs mail && wrangler d1 migrations apply DB --remote -c src/mail/wrangler.jsonc && wrangler deploy -c src/mail/wrangler.jsonc",
+		"deploy:app": "node scripts/render-wrangler.mjs app && vite build && wrangler d1 migrations apply DB --remote -c src/app/wrangler.jsonc && wrangler deploy -c src/app/wrangler.jsonc",
+		"key:create": "node scripts/key-create.mjs",
+		"key:revoke": "node scripts/key-revoke.mjs"
+	},
+	"dependencies": {
+		"jose": "^6.2.13",
+		"postal-mime": "^4.1.3",
+		"zod": "^4.6.7"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-plugin": "^1.4.6",
+		"@cloudflare/workers-types": "^5.20261021.1",
+		"@playwright/test": "^1.64.1",
+		"@sveltejs/adapter-cloudflare": "^8.0.1",
+		"@sveltejs/kit": "^3.1.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"@types/node": "^24",
+		"eslint": "^10.13.0",
+		"eslint-plugin-svelte": "^3.23.1",
+		"globals": "^16.0.0",
+		"svelte": "^5.57.2",
+		"svelte-check": "^4.7.7",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0",
+		"vite": "^8.3.5",
+		"vitest": "^4.1.8",
+		"wrangler": "^4.151.3"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"packageManager": "pnpm@12.11.2"
+}
