@@ -1,0 +1,9 @@
+{
+	"extends": "$app/tsconfig",
+	"compilerOptions": {
+		"strict": true,
+		"checkJs": false,
+		"types": ["$app/types", "node", "@cloudflare/workers-types", "@cloudflare/vitest-plugin/types"]
+	},
+	"include": ["src", "test", "*.ts"]
+}

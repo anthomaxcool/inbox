@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { ownerApiDeps } from '#lib/server/deps';
-import { handleOwnerApi } from '#lib/server/owner-api';
-import { appEnv } from '#lib/server/platform';
+import { ownerApiDeps } from '#lib/server/deps.ts';
+import { handleOwnerApi } from '#lib/server/owner-api.ts';
+import { appEnv } from '#lib/server/platform.ts';
 
 // Every /api request goes to handleOwnerApi, which runs ownerGuard first.
 const handler: RequestHandler = async ({ request }) => {

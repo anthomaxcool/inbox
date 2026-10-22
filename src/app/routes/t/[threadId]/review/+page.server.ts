@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { appEnv } from '#lib/server/platform';
-import { loadReview } from '#lib/server/review';
+import { appEnv } from '#lib/server/platform.ts';
+import { loadReview } from '#lib/server/review.ts';
 import type { PageServerLoad } from './$types';
 
 // hooks.server.ts has already run ownerGuard for this request.

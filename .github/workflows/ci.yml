@@ -1,3 +1,5 @@
+# Actions are pinned by tag, not commit hash, so `git grep -E '[0-9a-f]{32}'` stays empty (task 0.4).
+# The job has read-only permissions and no secrets, so a moved tag can't take anything.
 # Tests only. This workflow reads no secrets and deploys nothing (plan §8.8): deploy credentials
 # live only in Cloudflare Workers Builds, so an agent-pushed workflow has nothing to steal.
 name: ci
@@ -15,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
           cache: pnpm
@@ -27,6 +29,7 @@ jobs:
       - run: pnpm check:send-surface
       - run: pnpm check:config
       - run: pnpm lint
+      - run: pnpm check
       - run: pnpm test
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
@@ -35,13 +38,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: gitleaks (full history)
         run: |
-          curl -sSfL -o gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
-          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tgz" | sha256sum -c -
-          tar xzf gitleaks.tgz gitleaks
+          base=https://github.com/gitleaks/gitleaks/releases/download/v8.30.1
+          curl -sSfLO "$base/gitleaks_8.30.1_linux_x64.tar.gz"
+          curl -sSfL "$base/gitleaks_8.30.1_checksums.txt" | grep linux_x64.tar.gz | sha256sum -c -
+          tar xzf gitleaks_8.30.1_linux_x64.tar.gz gitleaks
           ./gitleaks git --redact --no-banner -v

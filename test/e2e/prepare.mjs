@@ -37,7 +37,7 @@ const env = {
 	XDG_CONFIG_HOME: `${process.cwd()}/${state}/xdg`,
 	WRANGLER_SEND_METRICS: 'false',
 	CLOUDFLARE_API_TOKEN: '',
-	INBOX_D1_ID: '00000000000000000000000000000000',
+	INBOX_D1_ID: 'e2e00000-0000-4000-8000-00000000e2e0',
 	INBOX_R2_BUCKET: 'inbox-e2e',
 	APP_HOST: `localhost:${E2E.port}`,
 	AGENT_HOST: 'localhost:8798',

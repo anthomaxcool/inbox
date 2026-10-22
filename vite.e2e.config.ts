@@ -13,7 +13,7 @@ function swapDeps(): Plugin {
 		name: 'inbox-e2e-deps',
 		enforce: 'pre',
 		resolveId(id) {
-			if (id === '#lib/server/deps') return e2eDeps;
+			if (id === '#lib/server/deps.ts') return e2eDeps;
 		}
 	};
 }

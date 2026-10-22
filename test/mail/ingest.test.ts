@@ -173,7 +173,7 @@ describe('ingest and threading', () => {
 			from: 'customer@example.org',
 			to: 'someone-else@example.com',
 			rawSize: raw.byteLength,
-			raw: new Response(raw).body!,
+			raw: new Blob([raw as BlobPart]).stream(),
 			forward: async () => {
 				forwarded = true;
 			}

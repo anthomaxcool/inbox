@@ -38,10 +38,10 @@ describe('agent auth', () => {
 		expect(await countEvents('agent.auth_refused')).toBe(before + 7);
 	});
 
-	it('has no send route, and unknown /v1 paths 404', async () => {
+	it('has no send route and no inbound notifier route: unknown paths 404', async () => {
 		const { key } = await seedKey();
 		const { threadId } = await seedThread();
-		for (const path of ['/v1/send', `/v1/threads/${threadId}/send`, `/v1/drafts/x/send`, '/api/drafts/x/send']) {
+		for (const path of ['/v1/send', `/v1/threads/${threadId}/send`, `/v1/drafts/x/send`, '/api/drafts/x/send', '/telegram', '/v1/telegram', '/webhook']) {
 			const res = await SELF.fetch(`${BASE}${path}`, { method: 'POST', headers: { Authorization: `Bearer ${key}` } });
 			expect(res.status).toBe(404);
 		}
