@@ -1,0 +1,26 @@
+// inbox-mail. Rendered to wrangler.jsonc by scripts/render-wrangler.mjs from Workers Builds
+// build variables. No instance value is ever committed (plan §8.12).
+// This Worker must never hold a send credential or a send binding (plan §8.1).
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "inbox-mail",
+	"main": "index.ts",
+	"compatibility_date": "2026-10-01",
+	"workers_dev": false,
+	"preview_urls": false,
+	"routes": [{ "pattern": "${AGENT_HOST}", "custom_domain": true }],
+	"vars": {
+		"MAILBOX": "${MAILBOX}"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "inbox",
+			"database_id": "${INBOX_D1_ID}",
+			"migrations_dir": "../../migrations"
+		}
+	],
+	"r2_buckets": [{ "binding": "R2", "bucket_name": "${INBOX_R2_BUCKET}" }],
+	"observability": { "enabled": true }
+	// Secrets, set by the owner in the dashboard: FORWARD_TO.
+}

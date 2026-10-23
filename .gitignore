@@ -1,0 +1,15 @@
+node_modules/
+.svelte-kit/
+build/
+.wrangler/
+.dev.vars*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+# Rendered from wrangler.template.jsonc by scripts/render-wrangler.mjs. Holds instance values.
+src/*/wrangler.jsonc
+wrangler.jsonc
+test-results/
+playwright-report/
+.e2e-state/

@@ -1,0 +1,29 @@
+// inbox-app. Rendered to wrangler.jsonc by scripts/render-wrangler.mjs from Workers Builds
+// build variables. No instance value is ever committed (plan §8.12).
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "inbox-app",
+	"main": "../../.svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-10-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": { "binding": "ASSETS", "directory": "../../.svelte-kit/cloudflare" },
+	"workers_dev": false,
+	"preview_urls": false,
+	"routes": [{ "pattern": "${APP_HOST}", "custom_domain": true }],
+	"vars": {
+		"MAILBOX": "${MAILBOX}",
+		"APP_ORIGIN": "https://${APP_HOST}"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "inbox",
+			"database_id": "${INBOX_D1_ID}",
+			"migrations_dir": "../../migrations"
+		}
+	],
+	"r2_buckets": [{ "binding": "R2", "bucket_name": "${INBOX_R2_BUCKET}" }],
+	"observability": { "enabled": true }
+	// Secrets, set by the owner in the dashboard: the provider key (see src/app/send.ts),
+	// OWNER_EMAIL, ACCESS_TEAM_DOMAIN, ACCESS_AUD.
+}
