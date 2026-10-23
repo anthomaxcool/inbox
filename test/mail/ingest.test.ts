@@ -181,4 +181,30 @@ describe('ingest and threading', () => {
 		expect(await handleEmail(message, env)).toEqual({ stored: false, reason: 'wrong_mailbox' });
 		expect(forwarded).toBe(true);
 	});
+
+	it('says why a recipient missed, naming it only on the mailbox domain', async () => {
+		const domain = env.MAILBOX.slice(env.MAILBOX.indexOf('@') + 1);
+		for (const [to, detail] of [
+			[`other@${domain}`, 'to_local_part:other'],
+			['someone@example.org', 'to_other_domain']
+		]) {
+			const raw = eml({});
+			await handleEmail(
+				{ from: 'customer@example.org', to, rawSize: raw.byteLength, raw: new Blob([raw as BlobPart]).stream(), forward: async () => {} },
+				env
+			);
+			const row = await env.DB.prepare("SELECT detail FROM events WHERE kind = 'mail.wrong_mailbox' ORDER BY at DESC, rowid DESC LIMIT 1").first<{ detail: string }>();
+			expect(row?.detail).toBe(detail);
+		}
+	});
+
+	it('stores mail whose recipient differs from MAILBOX only by case, brackets or invisible characters', async () => {
+		const raw = eml({});
+		const to = `<\u200B${env.MAILBOX.toUpperCase()} >`;
+		const result = await handleEmail(
+			{ from: 'customer@example.org', to, rawSize: raw.byteLength, raw: new Blob([raw as BlobPart]).stream(), forward: async () => {} },
+			env
+		);
+		expect(result.stored).toBe(true);
+	});
 });

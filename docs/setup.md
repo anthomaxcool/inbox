@@ -28,7 +28,9 @@ How to run your own Inbox on your Cloudflare account. Every step a person does s
    - `OWNER_EMAIL`: the email you sign in to Access with
    - `ACCESS_TEAM_DOMAIN`: your Zero Trust team domain as a bare hostname, for example `<team>.cloudflareaccess.com` (no `https://`, no trailing `/`)
    - `ACCESS_AUD`: the Access app's **Application Audience (AUD) tag** (Zero Trust → Access → Applications → your app → Overview)
-9. **HUMAN:** Open **inbox-mail → Settings → Variables and secrets → Add**, type **Secret**, name `FORWARD_TO`, value: the personal address that gets a safety copy of every mail.
+
+   These are the **runtime** variables (Settings → Variables and secrets), not the **build** variables from step 4. Type must be **Secret**: a value saved as **Text** is wiped by the next deploy. If sign-in shows `bad_config:missing:<NAME>`, that secret isn't set where the Worker reads it. `bad_config:ACCESS_TEAM_DOMAIN:<reason>` says what is wrong with the value without showing it.
+9. **HUMAN:** Open **inbox-mail → Settings → Variables and secrets → Add**, type **Secret**, name `FORWARD_TO`, value: the personal address that gets a safety copy of every mail. Inbound mail for any other address than `MAILBOX` is forwarded but not stored, and logged as a `mail.wrong_mailbox` event whose detail says why.
 10. **HUMAN:** For each Worker, open **Settings → Domains & Routes**. Check that **workers.dev** and **Preview URLs** both say **Disabled**, and that the only route is the custom domain from step 4.
 
 ## 2. Sending (P5)

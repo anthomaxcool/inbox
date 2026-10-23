@@ -100,13 +100,46 @@ describe('owner guard on POST /api/drafts/{id}/send', () => {
 		expect(send).toHaveBeenCalledOnce();
 	});
 
-	it('refuses with bad_config when the team domain is not a hostname, logs it, and never sends', async () => {
-		for (const value of ['', 'team', 'team.example.com/path', 'evil.example.com?x=.y']) {
+	it('accepts a team domain carrying invisible characters from a copy button', async () => {
+		const { d, send } = deps();
+		const pasted = { ...appEnv, ACCESS_TEAM_DOMAIN: `\uFEFF${env.ACCESS_TEAM_DOMAIN}\u200B` };
+		const res = await handleOwnerApi(await sendRequest(await goodHeaders()), pasted, d);
+		expect(res.status).toBe(200);
+		expect(send).toHaveBeenCalledOnce();
+	});
+
+	it('names missing owner secrets without echoing any value, logs it, and never sends', async () => {
+		const cases: [Partial<AppEnv>, string][] = [
+			[{ ACCESS_TEAM_DOMAIN: '' }, 'bad_config:missing:ACCESS_TEAM_DOMAIN'],
+			[{ ACCESS_TEAM_DOMAIN: undefined, ACCESS_AUD: ' ' }, 'bad_config:missing:ACCESS_TEAM_DOMAIN,ACCESS_AUD'],
+			[{ OWNER_EMAIL: '\u200B' }, 'bad_config:missing:OWNER_EMAIL']
+		];
+		for (const [patch, code] of cases) {
+			const { d, send } = deps();
+			const before = await countEvents();
+			const res = await handleOwnerApi(await sendRequest(await goodHeaders()), { ...appEnv, ...patch } as AppEnv, d);
+			expect(res.status).toBe(500);
+			expect(await res.json()).toEqual({ error: code });
+			expect(await countEvents()).toBe(before + 1);
+			expect(send).not.toHaveBeenCalled();
+		}
+	});
+
+	it('refuses with bad_config and a reason when the team domain is not a hostname, logs it, and never sends', async () => {
+		const cases: [string, string][] = [
+			['team', 'not_a_hostname'],
+			['team.example.com/path', 'contains_path'],
+			['evil.example.com?x=.y', 'contains_path'],
+			['team .example.com', 'contains_space'],
+			['me@example.com', 'looks_like_an_email'],
+			['team_x.example.com', 'unexpected_char_U+005F']
+		];
+		for (const [value, reason] of cases) {
 			const { d, send } = deps();
 			const before = await countEvents();
 			const res = await handleOwnerApi(await sendRequest(await goodHeaders()), { ...appEnv, ACCESS_TEAM_DOMAIN: value }, d);
 			expect(res.status).toBe(500);
-			expect(await res.json()).toEqual({ error: 'bad_config:ACCESS_TEAM_DOMAIN' });
+			expect(await res.json()).toEqual({ error: `bad_config:ACCESS_TEAM_DOMAIN:${reason}` });
 			expect(await countEvents()).toBe(before + 1);
 			expect(send).not.toHaveBeenCalled();
 		}
