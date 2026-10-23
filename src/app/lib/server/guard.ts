@@ -14,6 +14,15 @@ export interface GuardDeps {
 	jwks: (env: AppEnv) => JWTVerifyGetKey;
 }
 
+/**
+ * The Access team hostname from the ACCESS_TEAM_DOMAIN secret. Tolerates what a dashboard paste
+ * adds (spaces, `https://`, a trailing `/`), then requires a bare hostname. Null if it isn't one.
+ */
+export function accessTeamHost(raw: string | undefined): string | null {
+	const host = (raw ?? '').trim().replace(/^https:\/\//i, '').replace(/\/+$/, '').toLowerCase();
+	return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host) ? host : null;
+}
+
 function refuse(status: number, code: string): GuardResult {
 	return {
 		ok: false,
@@ -39,10 +48,13 @@ export async function ownerGuard(
 	const token = request.headers.get('Cf-Access-Jwt-Assertion');
 	if (!token) return deny(401, 'no_access_jwt');
 
+	const teamHost = accessTeamHost(env.ACCESS_TEAM_DOMAIN);
+	if (!teamHost) return deny(500, 'bad_config:ACCESS_TEAM_DOMAIN');
+
 	let payload: Record<string, unknown>;
 	try {
 		({ payload } = await jwtVerify(token, deps.jwks(env), {
-			issuer: `https://${env.ACCESS_TEAM_DOMAIN}`,
+			issuer: `https://${teamHost}`,
 			audience: env.ACCESS_AUD,
 			algorithms: ['RS256'],
 			requiredClaims: ['exp', 'iat']
