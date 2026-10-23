@@ -92,6 +92,26 @@ describe('owner guard on POST /api/drafts/{id}/send', () => {
 		expect(send).toHaveBeenCalledOnce();
 	});
 
+	it('accepts a team domain pasted with https:// and a trailing slash', async () => {
+		const { d, send } = deps();
+		const pasted = { ...appEnv, ACCESS_TEAM_DOMAIN: ` https://${env.ACCESS_TEAM_DOMAIN}/ ` };
+		const res = await handleOwnerApi(await sendRequest(await goodHeaders()), pasted, d);
+		expect(res.status).toBe(200);
+		expect(send).toHaveBeenCalledOnce();
+	});
+
+	it('refuses with bad_config when the team domain is not a hostname, logs it, and never sends', async () => {
+		for (const value of ['', 'team', 'team.example.com/path', 'evil.example.com?x=.y']) {
+			const { d, send } = deps();
+			const before = await countEvents();
+			const res = await handleOwnerApi(await sendRequest(await goodHeaders()), { ...appEnv, ACCESS_TEAM_DOMAIN: value }, d);
+			expect(res.status).toBe(500);
+			expect(await res.json()).toEqual({ error: 'bad_config:ACCESS_TEAM_DOMAIN' });
+			expect(await countEvents()).toBe(before + 1);
+			expect(send).not.toHaveBeenCalled();
+		}
+	});
+
 	it('guards GET routes and unknown routes too', async () => {
 		const { d } = deps();
 		expect((await handleOwnerApi(new Request(`${env.APP_ORIGIN}/api/threads/${DRAFT}`), appEnv, d)).status).toBe(401);

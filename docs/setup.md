@@ -26,7 +26,7 @@ How to run your own Inbox on your Cloudflare account. Every step a person does s
 7. **HUMAN:** If a deploy log stops at `d1 migrations apply` with an authentication error, open **Settings → Build → API token** for that Worker and give the token **D1: Edit**, then click **Retry build**.
 8. **HUMAN:** Open **inbox-app → Settings → Variables and secrets → Add**. Choose type **Secret** each time, and add:
    - `OWNER_EMAIL`: the email you sign in to Access with
-   - `ACCESS_TEAM_DOMAIN`: your Zero Trust team domain, for example `<team>.cloudflareaccess.com`
+   - `ACCESS_TEAM_DOMAIN`: your Zero Trust team domain as a bare hostname, for example `<team>.cloudflareaccess.com` (no `https://`, no trailing `/`)
    - `ACCESS_AUD`: the Access app's **Application Audience (AUD) tag** (Zero Trust → Access → Applications → your app → Overview)
 9. **HUMAN:** Open **inbox-mail → Settings → Variables and secrets → Add**, type **Secret**, name `FORWARD_TO`, value: the personal address that gets a safety copy of every mail.
 10. **HUMAN:** For each Worker, open **Settings → Domains & Routes**. Check that **workers.dev** and **Preview URLs** both say **Disabled**, and that the only route is the custom domain from step 4.
