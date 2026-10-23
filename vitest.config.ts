@@ -24,7 +24,7 @@ export default defineConfig(async () => {
 							miniflare: { ...shared, bindings: { ...shared.bindings, FORWARD_TO: 'owner@example.net' } }
 						})
 					],
-					test: { name: 'mail', include: ['test/mail/**/*.test.ts', 'test/shared/**/*.test.ts'], setupFiles: ['./test/apply-migrations.ts'] }
+					test: { name: 'mail', include: ['test/mail/**/*.test.ts', 'test/shared/**/*.test.ts', 'test/redteam/agent-*.test.ts'], setupFiles: ['./test/apply-migrations.ts'] }
 				},
 				{
 					plugins: [
@@ -42,10 +42,10 @@ export default defineConfig(async () => {
 							}
 						})
 					],
-					test: { name: 'app', include: ['test/app/**/*.test.ts'], setupFiles: ['./test/apply-migrations.ts'] }
+					test: { name: 'app', include: ['test/app/**/*.test.ts', 'test/redteam/owner-*.test.ts'], setupFiles: ['./test/apply-migrations.ts'] }
 				},
 				{
-					test: { name: 'node', include: ['test/node/**/*.test.ts'], environment: 'node' }
+					test: { name: 'node', include: ['test/node/**/*.test.ts', 'test/redteam/config.test.ts'], environment: 'node' }
 				}
 			]
 		}
