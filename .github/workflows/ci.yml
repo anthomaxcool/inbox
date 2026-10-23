@@ -31,8 +31,12 @@ jobs:
       - run: pnpm lint
       - run: pnpm check
       - run: pnpm test
-      - run: pnpm exec playwright install --with-deps chromium
+      # Headless shell only, no apt: `--with-deps` (apt) took 11 of the 15 job minutes on the first main run.
+      # GitHub's Ubuntu image already has Chromium's system libraries.
+      - run: pnpm exec playwright install --only-shell chromium
+        timeout-minutes: 3
       - run: pnpm test:e2e
+        timeout-minutes: 5
 
   gitleaks:
     runs-on: ubuntu-latest
