@@ -14,13 +14,23 @@ const CHECKS = {
 	AGENT_HOST: /^[a-z0-9.-]+(:\d+)?$/i,
 	MAILBOX: /^[^\s@"]+@[a-z0-9.-]+$/i
 };
+// What a valid value looks like. The error never echoes the value itself, since build logs are kept.
+const HOST_HINT = 'a bare hostname like inbox.example.com, with no https://, no path and no trailing /';
+const HINTS = {
+	INBOX_D1_ID: 'the Database ID from the D1 page, like 0a1b2c3d-...',
+	INBOX_R2_BUCKET: 'the bucket name: lowercase letters, digits and dashes',
+	APP_HOST: HOST_HINT,
+	AGENT_HOST: HOST_HINT,
+	MAILBOX: 'one address like support@example.com'
+};
 
 export function render(template, vars) {
 	return template.replace(/\$\{([A-Z0-9_]+)\}/g, (_m, name) => {
 		if (!VARS.includes(name)) throw new Error(`unknown template variable ${name}`);
-		const value = vars[name];
+		// Surrounding whitespace is a paste artefact, never part of a valid value.
+		const value = (vars[name] ?? '').trim();
 		if (!value) throw new Error(`missing build variable ${name}`);
-		if (!CHECKS[name].test(value)) throw new Error(`build variable ${name} has an unexpected format`);
+		if (!CHECKS[name].test(value)) throw new Error(`build variable ${name} has an unexpected format. Expected ${HINTS[name]}.`);
 		return value;
 	});
 }

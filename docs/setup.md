@@ -13,7 +13,7 @@ How to run your own Inbox on your Cloudflare account. Every step a person does s
    - **Build command:** leave empty
    - **Deploy command:** `pnpm deploy:mail`
    - **Root directory:** `/`
-4. **HUMAN:** Still on that screen, open **Advanced settings → Build variables** and add these five (plain text, not secret):
+4. **HUMAN:** Still on that screen, open **Advanced settings → Build variables** and add these five (plain text, not secret). Hostnames are bare: no `https://`, no trailing `/`.
    - `INBOX_D1_ID`: the Database ID from step 1
    - `INBOX_R2_BUCKET`: the bucket name from step 2
    - `APP_HOST`: the app hostname, for example `inbox.<your-domain>`
