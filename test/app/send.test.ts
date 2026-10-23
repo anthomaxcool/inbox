@@ -75,7 +75,8 @@ describe('§8.3 revision binding', () => {
 		expect(sent + refused).toBe(100);
 		expect(sent).toBeGreaterThan(0);
 		expect(refused).toBeGreaterThan(0);
-	});
+		// ~2 s locally, but shared CI runners are several times slower than the 5 s default allows.
+	}, 30_000);
 
 	it('refuses a stale revision with 409 and a closed draft with 410', async () => {
 		const { threadId, key, draftId, revisionId } = await threadWithDraft();

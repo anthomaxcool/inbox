@@ -61,6 +61,11 @@ describe('plan §8 invariants', () => {
 			expect(out).not.toMatch(/\$\{/);
 			expect(() => render(template, { ...vars, INBOX_D1_ID: '' })).toThrow(/missing build variable INBOX_D1_ID/);
 			expect(() => render(template, { ...vars, MAILBOX: 'x"},"workers_dev":true,"y":{"a":"b' })).toThrow(/unexpected format/);
+			expect(render(template, { ...vars, INBOX_D1_ID: ` ${vars.INBOX_D1_ID}\n` })).toBe(out);
+		}
+		const app = readFileSync('src/app/wrangler.template.jsonc', 'utf8');
+		for (const bad of ['https://inbox.example.com', 'inbox.example.com/']) {
+			expect(() => render(app, { ...vars, APP_HOST: bad })).toThrow(/APP_HOST .*no https:\/\//);
 		}
 	});
 
