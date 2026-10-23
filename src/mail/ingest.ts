@@ -1,4 +1,5 @@
 import PostalMime, { type Email as ParsedEmail } from 'postal-mime';
+import { cleanAddress } from '../shared/config';
 import { logEvent } from '../shared/events';
 import { nowIso, randomId } from '../shared/ids';
 import { firstMessageId, formatMessageIds, parseMessageIds } from '../shared/msgid';
@@ -32,13 +33,26 @@ export async function handleEmail(message: InboundMessage, env: MailEnv): Promis
 		}
 	}
 
-	if (message.to.toLowerCase() !== env.MAILBOX.toLowerCase()) {
-		await logEvent(env.DB, 'system', 'mail.wrong_mailbox');
+	const to = cleanAddress(message.to);
+	const mailbox = env.MAILBOX.toLowerCase();
+	if (to !== mailbox) {
+		await logEvent(env.DB, 'system', 'mail.wrong_mailbox', null, wrongMailboxDetail(to, mailbox));
 		return { stored: false, reason: 'wrong_mailbox' };
 	}
 
 	const raw = await readRaw(message.raw, message.rawSize);
 	return storeMessage(env, raw);
+}
+
+/**
+ * Why a recipient didn't match, for the events log. Names the recipient only when it's on the
+ * mailbox's own domain (one of our addresses, not a sender's), never MAILBOX's value.
+ */
+function wrongMailboxDetail(to: string, mailbox: string): string {
+	const at = to.lastIndexOf('@');
+	if (at < 0) return `to_not_an_address:${to.length}_chars`;
+	if (to.slice(at + 1) !== mailbox.slice(mailbox.lastIndexOf('@') + 1)) return 'to_other_domain';
+	return `to_local_part:${to.slice(0, at).slice(0, 64)}`;
 }
 
 async function readRaw(stream: ReadableStream<Uint8Array>, size: number): Promise<Uint8Array> {

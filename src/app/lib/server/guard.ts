@@ -1,4 +1,5 @@
 import { jwtVerify, type JWTVerifyGetKey } from 'jose';
+import { cleanAddress, cleanConfig } from '../../../shared/config';
 import { logEvent, type Actor } from '../../../shared/events';
 import type { AppEnv } from '../../app-env';
 
@@ -14,13 +15,32 @@ export interface GuardDeps {
 	jwks: (env: AppEnv) => JWTVerifyGetKey;
 }
 
+/** Secrets the owner sets in the dashboard. Named, never echoed, when one is missing. */
+const OWNER_SECRETS = ['OWNER_EMAIL', 'ACCESS_TEAM_DOMAIN', 'ACCESS_AUD'] as const;
+
+function teamHostCandidate(raw: string | undefined): string {
+	return cleanConfig(raw).replace(/^https:\/\//i, '').replace(/\/+$/, '').toLowerCase();
+}
+
 /**
  * The Access team hostname from the ACCESS_TEAM_DOMAIN secret. Tolerates what a dashboard paste
- * adds (spaces, `https://`, a trailing `/`), then requires a bare hostname. Null if it isn't one.
+ * adds (spaces, invisible characters, `https://`, a trailing `/`), then requires a bare hostname.
+ * Null if it isn't one.
  */
 export function accessTeamHost(raw: string | undefined): string | null {
-	const host = (raw ?? '').trim().replace(/^https:\/\//i, '').replace(/\/+$/, '').toLowerCase();
+	const host = teamHostCandidate(raw);
 	return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host) ? host : null;
+}
+
+/** Why a team domain isn't a hostname, without echoing it, so the owner can fix it from this alone. */
+function teamHostProblem(raw: string | undefined): string {
+	const host = teamHostCandidate(raw);
+	if (/\s/.test(host)) return 'contains_space';
+	if (/[/?#]/.test(host)) return 'contains_path';
+	if (host.includes('@')) return 'looks_like_an_email';
+	const bad = [...host].find((c) => !/[a-z0-9.-]/.test(c));
+	if (bad) return `unexpected_char_U+${bad.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}`;
+	return 'not_a_hostname';
 }
 
 function refuse(status: number, code: string): GuardResult {
@@ -48,14 +68,17 @@ export async function ownerGuard(
 	const token = request.headers.get('Cf-Access-Jwt-Assertion');
 	if (!token) return deny(401, 'no_access_jwt');
 
+	// A value saved as Text instead of Secret in the dashboard is wiped by the next deploy.
+	const missing = OWNER_SECRETS.filter((name) => cleanConfig(env[name]) === '');
+	if (missing.length > 0) return deny(500, `bad_config:missing:${missing.join(',')}`);
 	const teamHost = accessTeamHost(env.ACCESS_TEAM_DOMAIN);
-	if (!teamHost) return deny(500, 'bad_config:ACCESS_TEAM_DOMAIN');
+	if (!teamHost) return deny(500, `bad_config:ACCESS_TEAM_DOMAIN:${teamHostProblem(env.ACCESS_TEAM_DOMAIN)}`);
 
 	let payload: Record<string, unknown>;
 	try {
 		({ payload } = await jwtVerify(token, deps.jwks(env), {
 			issuer: `https://${teamHost}`,
-			audience: env.ACCESS_AUD,
+			audience: cleanConfig(env.ACCESS_AUD),
 			algorithms: ['RS256'],
 			requiredClaims: ['exp', 'iat']
 		}));
@@ -67,7 +90,7 @@ export async function ownerGuard(
 	if ('common_name' in payload || typeof payload.email !== 'string' || payload.email === '') {
 		return deny(403, 'service_token');
 	}
-	if (payload.email.toLowerCase() !== env.OWNER_EMAIL.toLowerCase()) return deny(403, 'not_owner');
+	if (payload.email.toLowerCase() !== cleanAddress(env.OWNER_EMAIL)) return deny(403, 'not_owner');
 
 	if (mutation) {
 		// Blocks cross-site form posts that ride the Access cookie.
